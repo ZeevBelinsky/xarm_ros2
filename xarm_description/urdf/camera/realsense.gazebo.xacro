@@ -1,23 +1,35 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:macro name="realsense_gazebo" params="prefix:=''">
+  <xacro:macro name="realsense_gazebo" params="
+    prefix:=''
+    range_min_depth:=0.3
+    range_max_depth:=3.0
+    pointcloud_cutoff:=0.3
+    width:=1280
+    height:=720
+    depth_stddev:=0.100
+    color_stddev:=0.007
+    ir_stddev:=0.05
+    horizontal_fov:=1.57
+    ">
+    
     <gazebo reference="${prefix}camera_depth_frame">
       <sensor name="${prefix}cameradepth" type="depth">
         <camera name="${prefix}camera">
-          <horizontal_fov>1.57</horizontal_fov>
+          <horizontal_fov>${horizontal_fov}</horizontal_fov>
           <image>
-            <width>1280</width>
-            <height>720</height>
+            <width>${width}</width>
+            <height>${height}</height>
           </image>
           <clip>
-            <near>0.1</near>
-            <far>100</far>
+            <near>${range_min_depth}</near>
+            <far>${range_max_depth}</far>
           </clip>
           <noise>
             <type>gaussian</type>
             <mean>0.0</mean>
-            <stddev>0.100</stddev>
+            <stddev>${depth_stddev}</stddev>
           </noise>
         </camera>
         <always_on>1</always_on>
@@ -28,20 +40,20 @@
     <gazebo reference="${prefix}camera_color_frame">
       <sensor name="${prefix}cameracolor" type="camera">
         <camera name="${prefix}camera">
-          <horizontal_fov>1.57</horizontal_fov>
+          <horizontal_fov>${horizontal_fov}</horizontal_fov>
           <image>
-            <width>1280</width>
-            <height>720</height>
+            <width>${width}</width>
+            <height>${height}</height>
             <format>RGB_INT8</format>
           </image>
           <clip>
-            <near>0.1</near>
-            <far>100</far>
+            <near>${range_min_depth}</near>
+            <far>${range_max_depth}</far>
           </clip>
           <noise>
             <type>gaussian</type>
             <mean>0.0</mean>
-            <stddev>0.007</stddev>
+            <stddev>${color_stddev}</stddev>
           </noise>
         </camera>
         <always_on>1</always_on>
@@ -52,20 +64,20 @@
     <gazebo reference="${prefix}camera_left_ir_frame">
       <sensor name="${prefix}cameraired1" type="camera">
         <camera name="${prefix}camera">
-          <horizontal_fov>1.57</horizontal_fov>
+          <horizontal_fov>${horizontal_fov}</horizontal_fov>
           <image>
-            <width>1280</width>
-            <height>720</height>
+            <width>${width}</width>
+            <height>${height}</height>
             <format>L_INT8</format>
           </image>
           <clip>
-            <near>0.1</near>
-            <far>100</far>
+            <near>${range_min_depth}</near>
+            <far>${range_max_depth}</far>
           </clip>
           <noise>
             <type>gaussian</type>
             <mean>0.0</mean>
-            <stddev>0.05</stddev>
+            <stddev>${ir_stddev}</stddev>
           </noise>
         </camera>
         <always_on>1</always_on>
@@ -76,20 +88,20 @@
     <gazebo reference="${prefix}camera_right_ir_frame">
       <sensor name="${prefix}cameraired2" type="camera">
         <camera name="${prefix}camera">
-          <horizontal_fov>1.57</horizontal_fov>
+          <horizontal_fov>${horizontal_fov}</horizontal_fov>
           <image>
-            <width>1280</width>
-            <height>720</height>
+            <width>${width}</width>
+            <height>${height}</height>
             <format>L_INT8</format>
           </image>
           <clip>
-            <near>0.1</near>
-            <far>100</far>
+            <near>${range_min_depth}</near>
+            <far>${range_max_depth}</far>
           </clip>
           <noise>
             <type>gaussian</type>
             <mean>0.0</mean>
-            <stddev>0.05</stddev>
+            <stddev>${ir_stddev}</stddev>
           </noise>
         </camera>
         <always_on>1</always_on>
@@ -115,11 +127,11 @@
         <depthOpticalframeName>${prefix}camera_depth_optical_frame</depthOpticalframeName>
         <infrared1OpticalframeName>${prefix}camera_left_ir_optical_frame</infrared1OpticalframeName>
         <infrared2OpticalframeName>${prefix}camera_right_ir_optical_frame</infrared2OpticalframeName>
-        <rangeMinDepth>0.3</rangeMinDepth>
-        <rangeMaxDepth>3.0</rangeMaxDepth>
+        <rangeMinDepth>${range_min_depth}</rangeMinDepth>
+        <rangeMaxDepth>${range_max_depth}</rangeMaxDepth>
         <pointCloud>true</pointCloud>
         <pointCloudTopicName>${prefix}depth/color/points</pointCloudTopicName>
-        <pointCloudCutoff>0.3</pointCloudCutoff>
+        <pointCloudCutoff>${pointcloud_cutoff}</pointCloudCutoff>
       </plugin>
     </gazebo>
   </xacro:macro>

@@ -26,6 +26,7 @@ def generate_launch_description():
     robot_type = LaunchConfiguration('robot_type', default='xarm')
 
     add_realsense_d435i = LaunchConfiguration('add_realsense_d435i', default=False)
+    add_realsense_d405 = LaunchConfiguration('add_realsense_d405', default=False)
     model1300 = LaunchConfiguration('model1300', default=False)
 
     add_other_geometry = LaunchConfiguration('add_other_geometry', default=False)
@@ -59,6 +60,7 @@ def generate_launch_description():
             'dof': dof,
             'robot_type': robot_type,
             'add_realsense_d435i': add_realsense_d435i,
+            'add_realsense_d405' : add_realsense_d405,
             'model1300': model1300,
             'add_other_geometry': add_other_geometry,
             'geometry_type': geometry_type,

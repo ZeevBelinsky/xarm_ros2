@@ -34,11 +34,17 @@ def launch_setup(context, *args, **kwargs):
     mesh_suffix = LaunchConfiguration('mesh_suffix', default='stl')
     kinematics_suffix = LaunchConfiguration('kinematics_suffix', default='')
     
-    add_gripper = LaunchConfiguration('add_gripper', default=False)
+    add_gripper = LaunchConfiguration('add_gripper', default=True)
     add_vacuum_gripper = LaunchConfiguration('add_vacuum_gripper', default=False)
     add_bio_gripper = LaunchConfiguration('add_bio_gripper', default=False)
+
     add_realsense_d435i = LaunchConfiguration('add_realsense_d435i', default=False)
-    add_d435i_links = LaunchConfiguration('add_d435i_links', default=True)
+    add_d435i_links = LaunchConfiguration('add_d435i_links', default=False)
+
+    add_realsense_d405 = LaunchConfiguration('add_realsense_d405', default=False)
+    add_d405_links = LaunchConfiguration('add_d405_links', default=False)
+
+
     add_other_geometry = LaunchConfiguration('add_other_geometry', default=False)
     geometry_type = LaunchConfiguration('geometry_type', default='box')
     geometry_mass = LaunchConfiguration('geometry_mass', default=0.1)
@@ -91,8 +97,13 @@ def launch_setup(context, *args, **kwargs):
         add_gripper=add_gripper,
         add_vacuum_gripper=add_vacuum_gripper,
         add_bio_gripper=add_bio_gripper,
+
         add_realsense_d435i=add_realsense_d435i,
+        add_realsense_d405=add_realsense_d405,
+
         add_d435i_links=add_d435i_links,
+        add_d405_links=add_d405_links,
+
         add_other_geometry=add_other_geometry,
         geometry_type=geometry_type,
         geometry_mass=geometry_mass,

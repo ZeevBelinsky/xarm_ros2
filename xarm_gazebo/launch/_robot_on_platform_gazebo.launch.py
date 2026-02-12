@@ -7,6 +7,7 @@
 # Author: Vinman <vinman.wen@ufactory.cc> <vinman.cub@gmail.com>
 
 import os
+from launch.actions import ExecuteProcess
 import yaml
 from pathlib import Path
 from ament_index_python import get_package_share_directory
@@ -24,6 +25,11 @@ from uf_ros_lib.uf_robot_utils import get_xacro_content, generate_ros2_control_p
 
     
 def launch_setup(context, *args, **kwargs):
+    # added by me
+    start_gazebo = LaunchConfiguration('start_gazebo', default=False)
+
+
+    # built in args
     prefix = LaunchConfiguration('prefix', default='')
     hw_ns = LaunchConfiguration('hw_ns', default='xarm')
     limited = LaunchConfiguration('limited', default=False)
@@ -37,11 +43,7 @@ def launch_setup(context, *args, **kwargs):
     ros2_control_plugin = LaunchConfiguration('ros2_control_plugin', default='gazebo_ros2_control/GazeboSystem')
     
     add_realsense_d435i = LaunchConfiguration('add_realsense_d435i', default=False)
-    add_d435i_links = LaunchConfiguration('add_d435i_links', default=False)
-
-    add_realsense_d405 = LaunchConfiguration('add_realsense_d405', default=False)
-    add_d405_links = LaunchConfiguration('add_d405_links', default=False)
-
+    add_d435i_links = LaunchConfiguration('add_d435i_links', default=True)
     model1300 = LaunchConfiguration('model1300', default=False)
     robot_sn = LaunchConfiguration('robot_sn', default='')
     attach_to = LaunchConfiguration('attach_to', default='world')
@@ -109,13 +111,8 @@ def launch_setup(context, *args, **kwargs):
                 add_gripper=add_gripper,
                 add_vacuum_gripper=add_vacuum_gripper,
                 add_bio_gripper=add_bio_gripper,
-
                 add_realsense_d435i=add_realsense_d435i,
                 add_d435i_links=add_d435i_links,
-
-                add_realsense_d405=add_realsense_d405,
-                add_d405_links=add_d405_links,
-
                 add_other_geometry=add_other_geometry,
                 geometry_type=geometry_type,
                 geometry_mass=geometry_mass,
@@ -146,16 +143,34 @@ def launch_setup(context, *args, **kwargs):
         ]
     )
 
-    # gazebo launch
-    # gazebo_ros/launch/gazebo.launch.py
-    xarm_gazebo_world = PathJoinSubstitution([FindPackageShare('xarm_gazebo'), 'worlds', 'table.world'])
+    # # gazebo launch
+    # # gazebo_ros/launch/gazebo.launch.py
+    # xarm_gazebo_world = PathJoinSubstitution([FindPackageShare('xarm_gazebo'), 'worlds', 'table.world'])
+    # gazebo_launch = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('gazebo_ros'), 'launch', 'gazebo.launch.py'])),
+    #     launch_arguments={
+    #         'world': xarm_gazebo_world,
+    #         'server_required': 'true',
+    #         'gui_required': 'true',
+    #     }.items(),
+    # )
+    
+    # --- Gazebo launch: use Gazebo Classic's empty world by default ---
+    # Tip: using just "empty.world" lets Gazebo find it via GAZEBO_RESOURCE_PATH.
+    # world_default = str(Path.home() / 'dev_ws/src/amiga_grid_bundle/amiga_grid.world')
+    world_default = 'empty.world'
+    world = LaunchConfiguration('world', default=world_default)
+
     gazebo_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('gazebo_ros'), 'launch', 'gazebo.launch.py'])),
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([FindPackageShare('gazebo_ros'), 'launch', 'gazebo.launch.py'])
+        ),
         launch_arguments={
-            'world': xarm_gazebo_world,
+            'world': world,
             'server_required': 'true',
             'gui_required': 'true',
         }.items(),
+        condition=IfCondition(start_gazebo),
     )
 
     # gazebo spawn entity node
@@ -167,13 +182,18 @@ def launch_setup(context, *args, **kwargs):
             '-topic', 'robot_description',
             # '-entity', '{}'.format(xarm_type),
             '-entity', 'UF_ROBOT',
-            '-x', '-0.2',
-            '-y', '-0.54' if robot_type.perform(context) == 'uf850' else '-0.5',
-            '-z', '1.021',
-            '-Y', '1.571',
+            '-x', '0.0',
+            '-y', '0.0',
+            '-z', '0.05',
+            '-Y', '0.0',
         ],
         parameters=[{'use_sim_time': True}],
     )
+    wait_for_spawn_service = ExecuteProcess(
+        cmd=['bash', '-lc', 'ros2 service wait /spawn_entity'],
+        output='screen'
+    )
+
 
     # rviz with moveit configuration
     rviz_config_file = PathJoinSubstitution([FindPackageShare(moveit_config_package_name), 'rviz', 'planner.rviz' if no_gui_ctrl.perform(context) == 'true' else 'moveit.rviz'])
@@ -226,18 +246,34 @@ def launch_setup(context, *args, **kwargs):
 
     if len(controller_nodes) > 0:
         return [
+            # Always start RSP first
+            robot_state_publisher_node,
+
+            # Optionally start Gazebo (only if start_gazebo:=true)
             RegisterEventHandler(
                 event_handler=OnProcessStart(
                     target_action=robot_state_publisher_node,
                     on_start=gazebo_launch,
                 )
             ),
+
+            # Wait for an existing Gazebo's /spawn_entity service
             RegisterEventHandler(
                 event_handler=OnProcessStart(
                     target_action=robot_state_publisher_node,
-                    on_start=gazebo_spawn_entity_node,
+                    on_start=wait_for_spawn_service,
                 )
             ),
+
+            # When /spawn_entity is ready, spawn the xArm model
+            RegisterEventHandler(
+                event_handler=OnProcessExit(
+                    target_action=wait_for_spawn_service,
+                    on_exit=gazebo_spawn_entity_node,
+                )
+            ),
+
+            # After the model spawns: launch RViz if requested
             RegisterEventHandler(
                 condition=IfCondition(show_rviz),
                 event_handler=OnProcessExit(
@@ -245,30 +281,45 @@ def launch_setup(context, *args, **kwargs):
                     on_exit=rviz2_node,
                 )
             ),
+
+            # After the model spawns: spawn controllers if requested
             RegisterEventHandler(
                 event_handler=OnProcessExit(
                     target_action=gazebo_spawn_entity_node,
                     on_exit=controller_nodes,
                 )
             ),
-            robot_state_publisher_node,
-            # gazebo_launch,
-            # gazebo_spawn_entity_node,
         ]
     else:
         return [
+            # Always start RSP first
+            robot_state_publisher_node,
+
+            # Optionally start Gazebo (only if start_gazebo:=true)
             RegisterEventHandler(
                 event_handler=OnProcessStart(
                     target_action=robot_state_publisher_node,
                     on_start=gazebo_launch,
                 )
             ),
+
+            # Wait for an existing Gazebo's /spawn_entity service
             RegisterEventHandler(
                 event_handler=OnProcessStart(
                     target_action=robot_state_publisher_node,
-                    on_start=gazebo_spawn_entity_node,
+                    on_start=wait_for_spawn_service,
                 )
             ),
+
+            # When /spawn_entity is ready, spawn the xArm model
+            RegisterEventHandler(
+                event_handler=OnProcessExit(
+                    target_action=wait_for_spawn_service,
+                    on_exit=gazebo_spawn_entity_node,
+                )
+            ),
+
+            # After the model spawns: launch RViz if requested
             RegisterEventHandler(
                 condition=IfCondition(show_rviz),
                 event_handler=OnProcessExit(
@@ -276,13 +327,11 @@ def launch_setup(context, *args, **kwargs):
                     on_exit=rviz2_node,
                 )
             ),
-            robot_state_publisher_node,
-            # gazebo_launch,
-            # gazebo_spawn_entity_node,
         ]
 
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument('start_gazebo', default_value='false'),
         OpaqueFunction(function=launch_setup)
     ])

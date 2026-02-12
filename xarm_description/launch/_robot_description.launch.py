@@ -33,7 +33,11 @@ def launch_setup(context, *args, **kwargs):
     xacro_file = LaunchConfiguration('xacro_file', default=PathJoinSubstitution([FindPackageShare('xarm_description'), 'urdf', 'xarm_device.urdf.xacro']))
 
     add_realsense_d435i = LaunchConfiguration('add_realsense_d435i', default=False)
+    add_realsense_d405 = LaunchConfiguration('add_realsense_d405', default=False)
+
     add_d435i_links = LaunchConfiguration('add_d435i_links', default=True)
+    add_d405_links = LaunchConfiguration('add_d405_links', default=True)
+    
     model1300 = LaunchConfiguration('model1300', default=False)
     robot_sn = LaunchConfiguration('robot_sn', default='')
     attach_to = LaunchConfiguration('attach_to', default='world')
@@ -80,7 +84,9 @@ def launch_setup(context, *args, **kwargs):
                 add_vacuum_gripper=add_vacuum_gripper,
                 add_bio_gripper=add_bio_gripper,
                 add_realsense_d435i=add_realsense_d435i,
+                add_realsense_d405=add_realsense_d405,
                 add_d435i_links=add_d435i_links,
+                add_d405_links=add_d405_links,
                 add_other_geometry=add_other_geometry,
                 geometry_type=geometry_type,
                 geometry_mass=geometry_mass,

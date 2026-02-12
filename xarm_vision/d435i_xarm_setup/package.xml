@@ -19,6 +19,7 @@
   <depend>object_recognition_msgs</depend>
   <depend>xarm_msgs</depend>
   <depend>xarm_api</depend>
+  <depend>yolo_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

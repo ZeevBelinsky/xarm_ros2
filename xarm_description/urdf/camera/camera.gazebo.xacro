@@ -1,90 +1,235 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:macro name="camera_gazebo" params="prefix">
+  <xacro:property name="pi_2" value="1.570796327"/>
+
+  <xacro:macro name="camera_gazebo" params="
+      prefix:=''
+
+      camera_mass:='0.01'
+      camera_inertiaX:='1e-06'
+      camera_inertiaY:='1e-06'
+      camera_inertiaZ:='1e-06'
+
+      horizontal_fov:='1.91986'
+      camera_width:='2208'
+      camera_height:='1242'
+      camera_near:='0.3'
+      camera_far:='12.0'
+
+      camera_dimensions:='0.17525 0.03025 0.04310'
+      camera_mesh_path:=''
+
+      baseline:='0.0'
+
+      attach_to:='link_base'
+      attach_xyz:='0.0 0.0 0.0'
+      attach_rpy:='0.0 0.0 0.0'
+
+      gazebo_material:='Gazebo/White'
+
+      mesh_origin_xyz:='0 0 0'
+      mesh_origin_rpy:='0 0 0'
+
+      lens_x:='0.0'
+      lens_z:='0.0'
+
+      update_rate:='15'
+
+      depth_stddev:='0.01'
+      color_stddev:='0.007'
+
+      pointcloud_topic:='depth/points'
+
+      depth_topic:='depth/image_raw'
+      depth_info_topic:='depth/camera_info'
+      color_topic:='image_raw'
+      color_info_topic:='camera_info'
+    ">
+
+    <xacro:property name="use_camera_mesh" value="${camera_mesh_path != ''}"/>
+    <xacro:property name="baseline_f" value="${float(baseline)}"/>
+    <xacro:property name="baseline_half" value="${baseline_f/2.0}"/>
+
+    <!-- Frame naming (old style) -->
+    <xacro:property name="camera_link" value="${prefix}camera_link"/>
+    <xacro:property name="depth_frame" value="${prefix}camera_depth_frame"/>
+    <xacro:property name="depth_optical_frame" value="${prefix}camera_depth_optical_frame"/>
+    <xacro:property name="color_frame" value="${prefix}camera_color_frame"/>
+    <xacro:property name="color_optical_frame" value="${prefix}camera_color_optical_frame"/>
+
+    <!-- Internal plugin camera names: derived from prefix ONLY -->
+    <xacro:property name="rgb_name" value="${prefix}rgb"/>
+    <xacro:property name="depth_name" value="${prefix}depth"/>
+
+    <!-- Camera body -->
     <link name="${prefix}link_camera">
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0" />
-        <mass value="0.1" />
-        <inertia 
-          ixx="0.01" ixy="0.0" ixz="0.0" 
-          iyy="0.01" iyz="0.0" izz="0.01" />
+        <mass value="${camera_mass}" />
+        <inertia
+          ixx="${camera_inertiaX}" ixy="0.0" ixz="0.0"
+          iyy="${camera_inertiaY}" iyz="0.0" izz="${camera_inertiaZ}" />
       </inertial>
+
       <visual>
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="${mesh_origin_xyz}" rpy="${mesh_origin_rpy}" />
         <geometry>
-          <sphere radius="0.02"/>
+          <xacro:if value="${use_camera_mesh}">
+            <mesh filename="${camera_mesh_path}"/>
+          </xacro:if>
+          <xacro:unless value="${use_camera_mesh}">
+            <box size="${camera_dimensions}"/>
+          </xacro:unless>
         </geometry>
-        <material name="${prefix}White" />
       </visual>
+
       <collision>
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="${mesh_origin_xyz}" rpy="${mesh_origin_rpy}" />
         <geometry>
-          <sphere radius="0.02"/>
+          <xacro:if value="${use_camera_mesh}">
+            <mesh filename="${camera_mesh_path}"/>
+          </xacro:if>
+          <xacro:unless value="${use_camera_mesh}">
+            <box size="${camera_dimensions}"/>
+          </xacro:unless>
         </geometry>
       </collision>
     </link>
+
+    <!-- Mount to robot -->
     <joint name="${prefix}joint_camera" type="fixed">
-      <origin xyz="0.692 0.001 1.17" rpy="0 1.5708 0" />
-      <parent link="${prefix}link_base" />
+      <origin xyz="${attach_xyz}" rpy="${attach_rpy}" />
+      <parent link="${attach_to}" />
       <child link="${prefix}link_camera" />
     </joint>
 
+    <!-- Frames (empty links) -->
+    <link name="${camera_link}"/>
+    <link name="${depth_frame}"/>
+    <link name="${depth_optical_frame}"/>
+    <link name="${color_frame}"/>
+    <link name="${color_optical_frame}"/>
+
+    <!-- Camera link at lens offset -->
+    <joint name="${prefix}camera_link_joint" type="fixed">
+      <parent link="${prefix}link_camera" />
+      <child link="${camera_link}" />
+      <origin xyz="${lens_x} 0 ${lens_z}" rpy="0 0 0" />
+    </joint>
+
+    <!-- Depth frame -->
+    <joint name="${prefix}camera_depth_joint" type="fixed">
+      <parent link="${camera_link}" />
+      <child link="${depth_frame}" />
+      <origin xyz="0 ${baseline_half} 0" rpy="0 0 0" />
+    </joint>
+
+    <!-- Depth optical frame -->
+    <joint name="${prefix}camera_depth_optical_joint" type="fixed">
+      <parent link="${depth_frame}" />
+      <child link="${depth_optical_frame}" />
+      <origin xyz="0 0 0" rpy="-${pi_2} 0 -${pi_2}" />
+    </joint>
+
+    <!-- Color frame -->
+    <joint name="${prefix}camera_color_joint" type="fixed">
+      <parent link="${camera_link}" />
+      <child link="${color_frame}" />
+      <origin xyz="0 ${baseline_half} 0" rpy="0 0 0" />
+    </joint>
+
+    <!-- Color optical frame -->
+    <joint name="${prefix}camera_color_optical_joint" type="fixed">
+      <parent link="${color_frame}" />
+      <child link="${color_optical_frame}" />
+      <origin xyz="0 0 0" rpy="-${pi_2} 0 -${pi_2}" />
+    </joint>
+
+    <!-- Gazebo properties for the physical body -->
     <gazebo reference="${prefix}link_camera">
-      <material>Gazebo/Black</material>
+      <material>${gazebo_material}</material>
+      <gravity>false</gravity>
+      <self_collide>false</self_collide>
     </gazebo>
 
-    <gazebo reference="${prefix}link_camera">
-      <sensor type="camera" name="xarm_camera_node">
-        <!-- <always_on>0</always_on> -->
-        <update_rate>10.0</update_rate>
-        <camera name="head">
-          <!-- <horizontal_fov>1.3962634</horizontal_fov> -->
-          <horizontal_fov>0.9948376567</horizontal_fov>
+    <!-- ========================= -->
+    <!-- COLOR (RGB) CAMERA SENSOR -->
+    <!-- ========================= -->
+    <gazebo reference="${color_frame}">
+      <gravity>false</gravity>
+      <self_collide>false</self_collide>
+
+      <sensor type="camera" name="${prefix}rgb_sensor">
+        <camera name="${prefix}rgb_gz">
+          <horizontal_fov>${horizontal_fov}</horizontal_fov>
           <image>
-            <width>640</width>
-            <height>480</height>
-            <foramt>B8G8R8</foramt>
+            <width>${camera_width}</width>
+            <height>${camera_height}</height>
+            <format>RGB_INT8</format>
           </image>
           <clip>
-            <near>0.02</near>
-            <far>300</far>
+            <near>${camera_near}</near>
+            <far>${camera_far}</far>
           </clip>
           <noise>
             <type>gaussian</type>
             <mean>0.0</mean>
-            <stddev>0.007</stddev>
+            <stddev>${color_stddev}</stddev>
           </noise>
         </camera>
-        <plugin name="gazebo_camera" filename="libgazebo_ros_camera.so">
-          <xacro:if value="${is_ros2}">
-            <ros>
-              <namespace>/</namespace>
-              <remapping>image_raw:=image_raw</remapping>
-              <remapping>camera_info:=camera_info</remapping>
-            </ros>
-            <camera_name>camera</camera_name>
-            <frame_name>camera_link</frame_name>
-            <hack_baseline>0.07</hack_baseline>
-          </xacro:if>
-          <xacro:unless value="${is_ros2}">
-            <alwaysOn>true</alwaysOn>
-            <updateRate>0.0</updateRate>
-            <cameraName>/camera</cameraName>
-            <imageTopicName>image_raw</imageTopicName>
-            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-            <frameName>camera_link</frameName>
-            <hackBaseline>0.07</hackBaseline>
-            <distortionK1>0.0</distortionK1>
-            <distortionK2>0.0</distortionK2>
-            <distortionK3>0.0</distortionK3>
-            <distortionT1>0.0</distortionT1>
-            <distortionT2>0.0</distortionT2>
-          </xacro:unless>
+
+        <always_on>1</always_on>
+        <update_rate>${update_rate}</update_rate>
+        <visualize>1</visualize>
+
+        <plugin name="${prefix}gazebo_rgb" filename="libgazebo_ros_camera.so">
+          <camera_name>${rgb_name}</camera_name>
+          <frame_name>${color_optical_frame}</frame_name>
+          <hack_baseline>${baseline}</hack_baseline>
         </plugin>
       </sensor>
     </gazebo>
-    
+
+    <!-- ====================== -->
+    <!-- DEPTH + POINTCLOUD     -->
+    <!-- ====================== -->
+    <gazebo reference="${depth_frame}">
+      <gravity>false</gravity>
+      <self_collide>false</self_collide>
+
+      <sensor type="depth" name="${prefix}depth_sensor">
+        <camera name="${prefix}depth_gz">
+          <horizontal_fov>${horizontal_fov}</horizontal_fov>
+          <image>
+            <width>${camera_width}</width>
+            <height>${camera_height}</height>
+          </image>
+          <clip>
+            <near>${camera_near}</near>
+            <far>${camera_far}</far>
+          </clip>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>${depth_stddev}</stddev>
+          </noise>
+        </camera>
+
+        <always_on>1</always_on>
+        <update_rate>${update_rate}</update_rate>
+        <visualize>1</visualize>
+
+        <plugin name="${prefix}gazebo_depth" filename="libgazebo_ros_camera.so">
+          <camera_name>${depth_name}</camera_name>
+          <frame_name>${depth_optical_frame}</frame_name>
+          <hack_baseline>${baseline}</hack_baseline>
+          <min_depth>${camera_near}</min_depth>
+        </plugin>
+      </sensor>
+    </gazebo>
+
   </xacro:macro>
 
 </robot>
+

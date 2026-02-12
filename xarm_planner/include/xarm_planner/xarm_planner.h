@@ -36,18 +36,22 @@ namespace xarm_planner
 
         bool planJointTarget(const std::vector<double>& joint_target);
         bool planPoseTarget(const geometry_msgs::msg::Pose& pose_target);
+        bool planPoseTarget(const geometry_msgs::msg::Pose& pose_target, double& cost_out);
         bool planPoseTargets(const std::vector<geometry_msgs::msg::Pose>& pose_target_vector);
         bool planCartesianPath(const std::vector<geometry_msgs::msg::Pose>& pose_target_vector);
+        void stop();
 
         bool executePath(bool wait = true);
     private:
         void init(const std::string& group_name);
+        double compute_path_cost(const trajectory_msgs::msg::JointTrajectory& jt) const;
 
         rclcpp::Node::SharedPtr node_;
         std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
         moveit::planning_interface::MoveGroupInterface::Plan xarm_plan_;
         moveit_msgs::msg::RobotTrajectory trajectory_;
         bool is_trajectory_;
+        double last_cost_{-1.0};
     };
 }
 

@@ -256,8 +256,13 @@ class MoveItConfigsBuilder(ParameterBuilder):
         add_gripper = get_param_str('add_gripper', False)
         add_vacuum_gripper = get_param_str('add_vacuum_gripper', False)
         add_bio_gripper = get_param_str('add_bio_gripper', False)
+
         add_realsense_d435i = get_param_str('add_realsense_d435i', False)
+        add_realsense_d405 = get_param_str('add_realsense_d405', False)
+
         add_d435i_links = get_param_str('add_d435i_links', True)
+        add_d405_links = get_param_str('add_d405_links', True)
+
         use_gazebo_camera = get_param_str('use_gazebo_camera', False)
         add_other_geometry = get_param_str('add_other_geometry', False)
         geometry_type = get_param_str('geometry_type', 'box')
@@ -303,8 +308,13 @@ class MoveItConfigsBuilder(ParameterBuilder):
             'add_gripper': add_gripper,
             'add_vacuum_gripper': add_vacuum_gripper,
             'add_bio_gripper': add_bio_gripper,
+
             'add_realsense_d435i': add_realsense_d435i,
+            'add_realsense_d405': add_realsense_d405,
+
             'add_d435i_links': add_d435i_links,
+            'add_d405_links': add_d405_links,
+
             'use_gazebo_camera': use_gazebo_camera,
             'add_other_geometry': add_other_geometry,
             'geometry_type': geometry_type,
@@ -902,12 +912,22 @@ class DualMoveItConfigsBuilder(ParameterBuilder):
         add_bio_gripper = get_param_str('add_bio_gripper', False)
         add_bio_gripper_1 = get_param_str('add_bio_gripper_1', add_bio_gripper)
         add_bio_gripper_2 = get_param_str('add_bio_gripper_2', add_bio_gripper)
+
         add_realsense_d435i = get_param_str('add_realsense_d435i', False)
         add_realsense_d435i_1 = get_param_str('add_realsense_d435i_1', add_realsense_d435i)
         add_realsense_d435i_2 = get_param_str('add_realsense_d435i_2', add_realsense_d435i)
         add_d435i_links = get_param_str('add_d435i_links', True)
         add_d435i_links_1 = get_param_str('add_d435i_links_1', add_d435i_links)
         add_d435i_links_2 = get_param_str('add_d435i_links_2', add_d435i_links)
+
+        # NEW: D405 per arm
+        add_realsense_d405 = get_param_str('add_realsense_d405', False)
+        add_realsense_d405_1 = get_param_str('add_realsense_d405_1', add_realsense_d405)
+        add_realsense_d405_2 = get_param_str('add_realsense_d405_2', add_realsense_d405)
+        add_d405_links = get_param_str('add_d405_links', True)
+        add_d405_links_1 = get_param_str('add_d405_links_1', add_d405_links)
+        add_d405_links_2 = get_param_str('add_d405_links_2', add_d405_links)
+
         add_other_geometry = get_param_str('add_other_geometry', False)
         add_other_geometry_1 = get_param_str('add_other_geometry_1', add_other_geometry)
         add_other_geometry_2 = get_param_str('add_other_geometry_2', add_other_geometry)
@@ -995,6 +1015,12 @@ class DualMoveItConfigsBuilder(ParameterBuilder):
             'add_realsense_d435i_2': add_realsense_d435i_2,
             'add_d435i_links_1': add_d435i_links_1,
             'add_d435i_links_2': add_d435i_links_2,
+            
+            'add_realsense_d405_1': add_realsense_d405_1,
+            'add_realsense_d405_2': add_realsense_d405_2,
+            'add_d405_links_1': add_d405_links_1,
+            'add_d405_links_2': add_d405_links_2,
+
             'add_other_geometry_1': add_other_geometry_1,
             'add_other_geometry_2': add_other_geometry_2,
             'geometry_type_1': geometry_type_1,

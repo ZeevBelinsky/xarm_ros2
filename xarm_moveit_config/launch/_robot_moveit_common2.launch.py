@@ -18,7 +18,8 @@ from launch_ros.substitutions import FindPackageShare
 from launch.actions import RegisterEventHandler, EmitEvent
 from launch.event_handlers import OnProcessExit
 from launch.events import Shutdown
-
+from launch.actions import LogInfo
+import shlex
 
 def launch_setup(context, *args, **kwargs):
     prefix = LaunchConfiguration('prefix', default='')
@@ -76,7 +77,12 @@ def launch_setup(context, *args, **kwargs):
 
     xyz = attach_xyz.perform(context)[1:-1].split(' ')
     rpy = attach_rpy.perform(context)[1:-1].split(' ')
-    args = xyz + rpy + [attach_to.perform(context), '{}link_base'.format(prefix.perform(context))]
+    args = [
+        '--x', xyz[0], '--y', xyz[1], '--z', xyz[2],
+        '--roll', rpy[0], '--pitch', rpy[1], '--yaw', rpy[2],
+        '--frame-id', attach_to.perform(context),
+        '--child-frame-id', f'{prefix.perform(context)}link_base',
+    ]
 
     # Static TF
     static_tf = Node(

@@ -24,7 +24,7 @@
 #define SERVICE_CALL_FAILED 999
 
 static const std::string target_frame = "link_base";
-static const std::string source_frame = "object_1";
+static const std::string source_frame = "leaf";
 
 template<typename ServiceT, typename SharedRequest = typename ServiceT::Request::SharedPtr>
 int call_request(rclcpp::Node::SharedPtr& node, std::shared_ptr<ServiceT> client, SharedRequest req)
@@ -136,7 +136,7 @@ int main(int argc, char** argv)
     RCLCPP_INFO(node->get_logger(), "grasp_test_xarm_planner start");
 
     int dof;
-    node->get_parameter_or("dof", dof, 7);
+    node->get_parameter_or("dof", dof, 6);
     std::string robot_type;
     node->get_parameter_or("robot_type", robot_type, std::string("xarm"));
     std::string hw_ns;

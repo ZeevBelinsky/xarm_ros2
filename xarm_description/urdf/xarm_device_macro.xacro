@@ -19,7 +19,9 @@
     ros2_control_params:=''
     load_gazebo_plugin:=false 
     add_realsense_d435i:=false
+    add_realsense_d405:=false
     add_d435i_links:=true
+    add_d405_links:=true
     use_gazebo_camera:=false
     add_other_geometry:=false 
     geometry_type:='box'
@@ -210,6 +212,27 @@
           hard_interface="${hard_interface}" />
       </xacro:unless>
     </xacro:unless>
+    
+    <xacro:if value="${add_realsense_d405}">
+      <!-- (xarm) Load RealSense D405 URDF -->
+      <xacro:include filename="$(find xarm_description)/urdf/camera/realsense_d405.urdf.xacro" />
+      <xacro:d405_urdf prefix="${prefix}" add_d405_links="${add_d405_links}" />
+      <xacro:if value="${add_d405_links}">
+        <xacro:include filename="$(find xarm_description)/urdf/camera/realsense.gazebo.xacro" />    
+        <xacro:realsense_gazebo
+        prefix="${prefix}"
+        range_min_depth="0.07"
+        range_max_depth="0.5"
+        pointcloud_cutoff="0.07"
+        depth_stddev="0.0005"
+        color_stddev="0.01"
+        ir_stddev="0.02"
+        horizontal_fov="1.518"
+        height="720"
+        width="1280"
+         />
+      </xacro:if>
+    </xacro:if>
 
     <xacro:if value="${add_realsense_d435i}">
       <!-- (xarm) Load RealSense D435i URDF -->
@@ -220,7 +243,8 @@
         <xacro:realsense_gazebo prefix="${prefix}" />
       </xacro:if>
     </xacro:if>
-    <xacro:unless value="${add_realsense_d435i}">
+    
+    <xacro:unless value="${add_realsense_d435i or add_realsense_d405}">
       <link name="${prefix}link_eef"/>
     </xacro:unless>
     <joint name="${prefix}joint_eef" type="fixed">

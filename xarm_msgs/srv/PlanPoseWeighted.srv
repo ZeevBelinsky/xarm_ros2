@@ -1,0 +1,8 @@
+# xarm_msgs/srv/PlanPoseWeighted.srv
+#    - xarm_pose_plan_Weighted
+geometry_msgs/Pose target
+
+---
+
+bool success
+float64 cost
