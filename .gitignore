@@ -6,4 +6,16 @@ xarm_api/config/xarm_user_params.yaml
 **/old
 xarm_description/config/kinematics/user
 *.py[cod]
-files__pycache__/
+__pycache__/
+# ---- colcon / ROS build artifacts ----
+build/
+install/
+log/
+**/build/
+**/install/
+**/log/
+
+# ---- generated / local dev files ----
+compile_commands.json
+__pycache__/
+**/__pycache__/
