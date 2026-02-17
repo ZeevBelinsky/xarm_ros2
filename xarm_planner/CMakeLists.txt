@@ -121,6 +121,11 @@ ament_target_dependencies(test_lite_gripper_realmove
   ${dependencies}
 )
 
+add_executable(test_xarm_planner_client_circle_outer_pose test/test_xarm_planner_client_circle_outer_pose.cpp)
+ament_target_dependencies(test_xarm_planner_client_circle_outer_pose
+  ${dependencies}
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
@@ -150,6 +155,7 @@ install(
   test_xarm_planner_client_pose
   test_xarm_gripper_planner_client_joint
   test_lite_gripper_realmove
+  test_xarm_planner_client_circle_outer_pose
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

@@ -16,9 +16,9 @@ def generate_launch_description():
     robot_type = LaunchConfiguration('robot_type', default='xarm')
 
     xarm_planner_node_test = Node(
-        name='test_xarm_planner_client_pose',
+        name='test_xarm_planner_client_circle_outer_pose',
         package='xarm_planner',
-        executable='test_xarm_planner_client_pose',
+        executable='test_xarm_planner_client_circle_outer_pose',
         output='screen',
         parameters=[
             {
