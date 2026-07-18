@@ -2,6 +2,7 @@
 #   - xarm_pose_plan
 
 geometry_msgs/Pose target
+string end_effector_link
 
 ---
 
