@@ -35,8 +35,8 @@ namespace xarm_planner
         ~XArmPlanner() {};
 
         bool planJointTarget(const std::vector<double>& joint_target);
-        bool planPoseTarget(const geometry_msgs::msg::Pose& pose_target);
-        bool planPoseTarget(const geometry_msgs::msg::Pose& pose_target, double& cost_out);
+        bool planPoseTarget(const geometry_msgs::msg::Pose& pose_target, const std::string& end_effector_link = "");
+        bool planPoseTarget(const geometry_msgs::msg::Pose& pose_target, double& cost_out, const std::string& end_effector_link = "");
         bool planPoseTargets(const std::vector<geometry_msgs::msg::Pose>& pose_target_vector);
         bool planCartesianPath(const std::vector<geometry_msgs::msg::Pose>& pose_target_vector);
         void stop();
