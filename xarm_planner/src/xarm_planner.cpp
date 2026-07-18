@@ -57,9 +57,9 @@ bool XArmPlanner::planJointTarget(const std::vector<double>& joint_target)
 	return success;
 }
 
-bool XArmPlanner::planPoseTarget(const geometry_msgs::msg::Pose& pose_target)
+bool XArmPlanner::planPoseTarget(const geometry_msgs::msg::Pose& pose_target, const std::string& end_effector_link)
 {
-	bool success = move_group_->setPoseTarget(pose_target);
+	bool success = move_group_->setPoseTarget(pose_target, end_effector_link);
 	if (!success)
 		RCLCPP_WARN(node_->get_logger(), "setPoseTarget: out of bounds");
 	success = (move_group_->plan(xarm_plan_) == moveit::core::MoveItErrorCode::SUCCESS);
@@ -69,10 +69,10 @@ bool XArmPlanner::planPoseTarget(const geometry_msgs::msg::Pose& pose_target)
 	return success;
 }
 
-bool XArmPlanner::planPoseTarget(const geometry_msgs::msg::Pose& pose_target, double& cost_out)
+bool XArmPlanner::planPoseTarget(const geometry_msgs::msg::Pose& pose_target, double& cost_out, const std::string& end_effector_link)
 {
 	cost_out = -1.0;
-	bool success = planPoseTarget(pose_target);
+	bool success = planPoseTarget(pose_target, end_effector_link);
 	if(success) {
 		cost_out = compute_path_cost(xarm_plan_.trajectory_.joint_trajectory);
 	}
