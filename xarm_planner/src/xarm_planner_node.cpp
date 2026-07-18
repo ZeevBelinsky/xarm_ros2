@@ -129,7 +129,7 @@ bool XArmPlannerRunner::do_pose_plan_weighted(
     std::shared_ptr<xarm_msgs::srv::PlanPoseWeighted::Response> res)
 {
 	double cost = -1.0;
-	bool success = xarm_planner_->planPoseTarget(req->target, cost, end_effector_link);
+	bool success = xarm_planner_->planPoseTarget(req->target, cost, req->end_effector_link);
 
 	res->success = success;
 	res->cost = cost;
