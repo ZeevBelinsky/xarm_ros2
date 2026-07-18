@@ -1,6 +1,7 @@
 # xarm_msgs/srv/PlanPoseWeighted.srv
 #    - xarm_pose_plan_Weighted
 geometry_msgs/Pose target
+string end_effector_link
 
 ---
 
